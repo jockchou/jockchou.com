@@ -1,7 +1,7 @@
 <!--
 author: jockchou
 date: 2015-08-24
-title: coreseek原理及MySQL数据源配置
+title: coreseek原理及配置
 tags: coreseek, Sphinx，搜索引擎
 category: Sphinx
 status: publish

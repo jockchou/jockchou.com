@@ -245,10 +245,12 @@ pre {
   overflow: auto;
   max-width: 100%;
   margin: 20px 0;
-  padding: 30px;
+  padding: 5px;
   white-space: pre-wrap; }
 
 pre code {
+  word-wrap: initial;
+  white-space: pre;
   padding: 0; }
 
 abbr, acronym, dfn {
