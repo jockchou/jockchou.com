@@ -38,10 +38,11 @@ source pingo_subject_main
     sql_range_step          = 1000
     sql_ranged_throttle     = 0
     
-    sql_query               = SELECT id, title, content, imageUrl, imageUrl2, posterUrl, topicCnt, readCnt, userCnt, orderVal, isActivity, activityTitle, activityUrl, UNIX_TIMESTAMP(addTime) AS addTime, UNIX_TIMESTAMP(updateTime) AS updateTime, UNIX_TIMESTAMP(onlineTime) AS onlineTime, isOfficial, isHot, state FROM subject \
+    sql_query               = SELECT id, id AS subjectid, title, content, imageUrl, imageUrl2, posterUrl, topicCnt, readCnt, userCnt, orderVal, isActivity, activityTitle, activityUrl, UNIX_TIMESTAMP(addTime) AS addTime, UNIX_TIMESTAMP(updateTime) AS updateTime, UNIX_TIMESTAMP(onlineTime) AS onlineTime, isOfficial, isHot, state FROM subject \
                               WHERE id <= (SELECT max_doc_id FROM sph_counter WHERE counter_id = 2) \
                               AND id >= $start AND id <= $end
     
+    sql_attr_uint           = subjectid
     sql_field_string        = title
     sql_attr_string         = content
     sql_attr_string         = imageUrl
@@ -73,7 +74,7 @@ source pingo_subject_delta : pingo_subject_main
     
     sql_query_range         = SELECT MIN(id), MAX(id) FROM subject WHERE id > (SELECT max_doc_id FROM sph_counter WHERE counter_id = 2)
     
-    sql_query               = SELECT id, title, content, imageUrl, imageUrl2, posterUrl, topicCnt, readCnt, userCnt, orderVal, isActivity, activityTitle, activityUrl, UNIX_TIMESTAMP(addTime) AS addTime, UNIX_TIMESTAMP(updateTime) AS updateTime, UNIX_TIMESTAMP(onlineTime) AS onlineTime, isOfficial, isHot, state FROM subject \
+    sql_query               = SELECT id, id AS subjectid, title, content, imageUrl, imageUrl2, posterUrl, topicCnt, readCnt, userCnt, orderVal, isActivity, activityTitle, activityUrl, UNIX_TIMESTAMP(addTime) AS addTime, UNIX_TIMESTAMP(updateTime) AS updateTime, UNIX_TIMESTAMP(onlineTime) AS onlineTime, isOfficial, isHot, state FROM subject \
                               WHERE id > (SELECT max_doc_id FROM sph_counter WHERE counter_id = 2) \
                               AND id >= $start AND id <= $end
 }
