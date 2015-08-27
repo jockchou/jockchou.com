@@ -16,8 +16,8 @@ class Markdown {
 	//所有月份
 	private $yearMonths;
 	
-	//博客文件目录
-	private $postPath;
+	//是否开启缓存
+	private $enableCache = false;
 	
 	//CI
 	private $CI;
@@ -30,8 +30,6 @@ class Markdown {
 		$this->CI->load->helper('file');
 		$this->CI->load->helper('url');
 		$this->CI->load->driver('cache');
-		
-    	$this->postPath = str_replace("\\", "/", dirname(APPPATH)) . '/posts/';
 	}
 	
 	//按分类查找博客
@@ -102,18 +100,21 @@ class Markdown {
 	}
 	
 	//按标题关键字查找博客
-	public function getBlogByTitle($title) {
-		$cacheKey = "getBlogByTitle_" . (md5($title)) . ".gb";
+	public function getBlogByTitle($title, $max = 50) {
+		$cacheKey = "getBlogByTitle_" . (md5($title)) . "_" . $max . ".gb";
 		$blogList = $this->gbReadCache($cacheKey);
 		
 		if ($blogList === false) {
 			$blogList = array();
 			foreach ($this->blogs as $idx => $blog) {
-				$blogTitle = $blog['title'];
+				$blogTitle = strtolower($blog['title']);
+				$title = strtolower($title);
 				
-				if (strpos($blogTitle, $title) >= 0) {
+				if (strpos($blogTitle, $title) !== FALSE) {
 					array_push($blogList, $blog);
 				}
+				
+				if (count($blogList) >= $max) break;
 			}
 			$this->gbWriteCache($cacheKey, $blogList);
 		}
@@ -305,18 +306,20 @@ class Markdown {
 	}
 	
 	//加载所有的博客
-	public function initAllBlogData() {
+	public function initAllBlogData($postPath, $enableCache=false) {
 		$this->blogs = array();
 		$this->tags = array();
 		$this->categorys = array();
 		$this->yearMonths = array();
 		
+		$this->enableCache = $enableCache;
+		
 		//先读缓存
 		if (!$this->globalDataCacheRead()) {
 			//列出所有文件，可能包含非markdown文件
-			$mdfiles = get_dir_file_info($this->postPath, FALSE);
+			$mdfiles = get_dir_file_info($postPath, FALSE);
 			
-			$this->readAllPostInfo($mdfiles);
+			$this->readAllPostInfo($mdfiles, $postPath);
 		}
 	}
 	
@@ -330,11 +333,11 @@ class Markdown {
 		$noteBlockArr = array();
 		$noteTmpArr = array();
 		$pattern1 = '/<\!\-\-(.*?)\-\->/is';
-	    $pattern2 = '/^\s*(author|head|date|title|summary|images|tags|category|status)\s*:(.*?)$/im';
+		$pattern2 = '/^\s*(author|head|date|title|summary|images|tags|category|status)\s*:(.*?)$/im';
 	    
-	    $subject = file_get_contents($serverPath);
+		$subject = file_get_contents($serverPath);
 	    
-	    $blogProp = array(
+		$blogProp = array(
 			"author" => "",
 			"head" => "",
 			"date" => "",
@@ -348,21 +351,21 @@ class Markdown {
 			"content" => (string)$this->parseMarkdown($subject)
 		);
 		
-	    preg_match($pattern1, $subject, $matches);
+		preg_match($pattern1, $subject, $matches);
 	    
-	    if (isset($matches[1])) {
-	        $procontent = trim($matches[1]);
-	        $proarr = explode("\n", $procontent);
+		if (isset($matches[1])) {
+			$procontent = trim($matches[1]);
+			$proarr = explode("\n", $procontent);
 	        
-	        foreach($proarr as $proline) {
-	            $proline = trim($proline);
-	            if ($proline) {
-	                preg_match($pattern2, $proline, $matches);
-	                if(isset($matches[2])) {
-	                    $propName = trim($matches[1]);
-	                    $propVal = trim($matches[2]);
-	                    //echo $proName . " --> " . $proVal . "\n";
-	                    switch($propName) {
+			foreach($proarr as $proline) {
+				$proline = trim($proline);
+				if ($proline) {
+					preg_match($pattern2, $proline, $matches);
+					if(isset($matches[2])) {
+						$propName = trim($matches[1]);
+						$propVal = trim($matches[2]);
+						//echo $proName . " --> " . $proVal . "\n";
+						switch($propName) {
 							case "author":
 								$blogProp['author'] = $propVal;
 								break;
@@ -393,10 +396,10 @@ class Markdown {
 								$blogProp['status'] = $propVal == "draft" ? $propVal : "publish";
 								break;
 						}
-	                }
-	            }
-	        }
-	    }
+					}
+				}
+			}
+		}
 		
 		$keywrodsArr = array_merge($tagsArr, $cateArr);
 		
@@ -472,21 +475,23 @@ class Markdown {
 	}
 	
 	//读取所有博客的信息
-	private function readAllPostInfo($mdfiles) {
-		foreach ($mdfiles as $fileName => $fileProp) {
+	private function readAllPostInfo($mdfiles, $postPath) {
+		foreach ($mdfiles as $idx => $fileProp) {
 			
+			$fileName = $fileProp['name'];
+            
 			//非markdown文件，不处理，直接过滤
 			if (!$this->checkFileExt($fileName)) continue;
 			
-			$fileName = $fileProp['name'];
 			$mtime = date("Y-m-d H:i:s", $fileProp['date']);
 			$ctime = date("Y-m-d H:i:s", $fileProp['cdate']);
 			$serverPath = str_replace("\\", "/", $fileProp['server_path']);
-			$relativePath = str_replace($this->postPath, "", $serverPath);
+			$relativePath = str_replace($postPath, "", $serverPath);
 			
 			$sitePath = $this->changeFileExt($relativePath);
 			$siteURL = "/blog/" . $this->changeFileExt($relativePath);
 			
+            $siteURL = $this->urlencodeFileName($siteURL);
 			$blogId = md5($siteURL);
 			
 			$blog = array(
@@ -506,7 +511,7 @@ class Markdown {
 			if (empty($blogProp['title'])) continue;
 			
 			//草稿状态的不处理
-			if ($blogProp == "draft") continue;
+			if ($blogProp['status'] == "draft") continue;
 			
 			$btime = strtotime($ctime);
 			if (empty($blogProp['date'])) {
@@ -538,7 +543,7 @@ class Markdown {
 	
 	//写缓存
 	private function gbWriteCache($key, $objdata) {
-		if (ENVIRONMENT != "development") {
+		if (ENVIRONMENT != "development" && $this->enableCache && !empty($objdata)) {
 			$this->CI->cache->file->save($key, serialize($objdata), GB_DATA_CACHE_TIME);
 		}
 	}
@@ -554,7 +559,7 @@ class Markdown {
 	
 	//缓存全局数据
 	private function globalDataCacheWrite() {
-		if (ENVIRONMENT != "development") {
+		if (ENVIRONMENT != "development" && $this->enableCache) {
 			$this->gbWriteCache(GB_BLOG_CACHE, $this->blogs);
 			$this->gbWriteCache(GB_TAG_CACHE, $this->tags);
 			$this->gbWriteCache(GB_CATEGORY_CACHE, $this->categorys);
@@ -611,12 +616,23 @@ class Markdown {
 	//修改后缀名
 	public function changeFileExt($fileName, $ext="html") {
 		$pics = explode('.' , $fileName);
-		if (count($pics) > 1) {
-			$pics[count($pics) -1] = $ext;
+        $len = count($pics);
+		if ($len > 1) {
+			$pics[$len - 1] = $ext;
 		}
 		
 		return implode(".", $pics);
 	}
+    
+    //对URL中的中文编码
+    private function urlencodeFileName($fileName) {
+		$pics = explode('/' , $fileName);
+		$len = count($pics);
+		if ($len > 0) {
+			$pics[$len - 1] = urlencode(urlencode($pics[$len - 1]));
+		}
+		return implode("/", $pics);
+    }
 	
 	//将tags, category字符串转成数组
 	private function converStrArr($tags, $type) {
