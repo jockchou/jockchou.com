@@ -1,24 +1,24 @@
 #GitBlog配置文件，使用4个空格代替Tab
 ---
-url: /
-title: Your-GitBlog
+url: http://jockchou.com
+title: jockchou's blog
 subtitle: 自豪地采用GitBlog
-theme: simple
+theme: quest
 enableCache: true
 highlight: true
 mathjax: false
-duoshuo:
-baiduAnalytics:
-keywords: GitBlog,博客,Markdown博客,jockchou
+duoshuo: jockchoublog
+baiduAnalytics: c77de0b48ddb11b66b0300d7eb53c3bc
+keywords: jockchou，jockchou的博客，MySQL优化，Linux技术，PHP
 description: >
     GitBlog是一个简单易用的Markdown博客系统
-version: 2.2
+version: 2.1
 author:
-    name: your-name
-    email: your-email@example.com
-    github: your-github
-    weibo: your-weibo
-    avatar:
+    name: jockchou
+    email: 164068300@qq.com
+    github: jockchou
+    weibo: 2558456121
+    avatar: http://pingodata.qiniudn.com/jockchou-avatar.jpg
 blog:
     recentSize: 5
     pageSize: 6
