@@ -14,7 +14,7 @@ coreseek是一个搜索引擎框架，它可以基于MySQL数据源和mmseg分�
 
 coreseek基于Sphinx研发，构架如下图所示：
 
-![sphinx](/img/sphinx.png)
+![sphinx](../img/sphinx.png)
 
 构成coreseek的核心组件：
 

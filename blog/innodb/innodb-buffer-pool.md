@@ -14,7 +14,7 @@ InnoDB缓冲池是通过LRU算法来管理page的。频繁使用的page放在LRU
 
 InnoDB引擎中page的默认大小为16KB，InnoDB对传统的LRU算法做了一些优化。如下图所示：
 
-![innod-LRU](../../img/innodb-3.png)
+![innod-LRU](../img/innodb-3.png)
 
 LRU列表被分成两部分，midpoint点之前的部分称为new列表，之后的部分称为old列表，new列表中的页都是最为活跌的热点数据。midpoint的位置通过参数`innodb_old_blocks_pct`来设置。
 

@@ -26,7 +26,7 @@ coreseek使用mmseg作为分词工具，默认的词库是有限的，我们需�
 ```
 
 你也可以下载搜狗细胞词库，通过深蓝词库转换器转成以上的格式。
-![mmseg](/img/mmseg.jpg)
+![mmseg](../img/mmseg.jpg)
 
 搜狗细胞词库下载地址：[http://pinyin.sogou.com/dict/][1]  
 深蓝词库转换器下载地址：[imewlconverter_1_3_1][2]  

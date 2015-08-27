@@ -10,7 +10,7 @@ summary: 在InnoDB存储引擎的架构中，有多个内存块，这些内存�
 
 在InnoDB存储引擎的架构中，有多个内存块，这些内存块组成一个内存池。InnoDB存储引擎体系架构如下图所示：
 
-![innodb构架](../../img/innodb-1.png)
+![innodb构架](../img/innodb-1.png)
 
 # 后台线程 #
 
@@ -57,7 +57,7 @@ InnoDB引擎是基于磁盘存储的，将数据记录按照页的方式进行�
 
 InnoDB缓冲池包含的数据页类型有：索引页，数据页，undo页，插入缓冲（insert buffer)，自适应哈希索引，InnoDB存储的锁信息，数据字典信息等。结构图如下：
 
-![innodb构架](../../img/innodb-2.jpg)
+![innodb构架](../img/innodb-2.jpg)
 
 InnoDB1.0.X版本开始，允许有多个缓冲池实现。page根据哈希平均分配到不同的缓冲池实例中，用来减少资源竞争，提高并发。可以通过参数`innodb_buffer_pool_instances`进行配置。
 
